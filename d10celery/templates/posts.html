@@ -1,0 +1,71 @@
+{% extends 'flatpages/default.html' %}
+{% load censor %}!
+{% load cache %}
+{% load filter_save %}!
+
+{% block title %}
+Посты
+{% endblock title %}
+
+{% block content %}
+{% cache 30 header %}
+    <h1>Все новости</h1>
+{% endcache %}
+<h3>Общее количество постов на дату {{ time_now|date:'M d Y' }} : {{ posts|length }} статьи</h3>
+   <form action="" method="get">
+       {{ filterset.form.as_p }}
+       <input type="submit" value="Найти" />
+   </form>
+<hr>
+   {% if posts %}
+       <table>
+           <tr>
+               {% cache 30 table_header %}
+                   <td><b>Заголовок</b></td>
+                   <td><b>Категория</b></td>
+                   <td><b>Дата публикации</b></td>
+                   <td><b>Краткое содержание</b></td>
+               {% endcache %}
+           </tr>
+           {% for post in posts %}
+           <tr>
+               <td>{{ post.post_name|censor }}</td>
+               <td>
+                   {% for cat in post.category.all %}
+                   <a href="{% url 'category_posts_list' cat.id %}">{{ cat }}</a>
+                   {% endfor %}
+               </td>
+               <td>{{ post.post_time|date:'d M Y' }}</td>
+               <td>{{ post.post_text|truncatewords:20|censor }}</td>
+           </tr>
+           {% endfor %}
+       </table>
+   {% else %}
+        {% cache 30 no_news %}
+            <h2>Новостей нет!</h2>
+        {% endcache %}
+   {% endif %}
+   {% if page_obj.has_previous %}
+       <a href="?{% url_replace page=1 %}">1</a>
+       {% if page_obj.previous_page_number != 1 %}
+           ...
+           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+       {% endif %}
+   {% endif %}
+
+   {{ page_obj.number }}
+
+   {% if page_obj.has_next %}
+       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+       {% if paginator.num_pages != page_obj.next_page_number %}
+           ...
+           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+       {% endif %}
+   {% endif %}
+   {% if is_not_author %}
+   <button> <a href="/news/be_author/"> Стать автором </a> </button>
+   {% endif %}
+   {% if is_not_subscriber %}
+   <button> <a href="{% url 'subscribe' category.id %}"> Подписаться</a> </button>
+    {% endif %}
+{% endblock content %}

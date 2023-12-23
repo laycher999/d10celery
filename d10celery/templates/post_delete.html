@@ -1,0 +1,14 @@
+{% extends 'flatpages/default.html' %}
+{% load cache %}
+
+{% block content %}
+{% cache 30 header %}
+    <h1>Удаление поста</h1>
+{% endcache %}
+<hr>
+<form action="" method="post">
+    {% csrf_token %}
+    <p>Удаляем "{{ post.post_name }}"?</p>
+    <input type="submit" value="Удалить" />
+</form>
+{% endblock content %}
